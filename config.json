@@ -1,0 +1,10 @@
+
+{
+  "DESIGN_NAME": "tt_um_moving_average4",
+  "VERILOG_FILES": ["./moving_average4.v"],
+  "CLOCK_PORT": "clk",
+  "CLOCK_PERIOD": 20,
+  "DESIGN_IS_CORE": false,
+  "PDK": "sky130A",
+  "STD_CELL_LIBRARY": "sky130_fd_sc_hd"
+}
