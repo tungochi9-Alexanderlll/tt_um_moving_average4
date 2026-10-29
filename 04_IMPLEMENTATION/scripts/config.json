@@ -1,0 +1,38 @@
+{
+  "project_id": "G01",
+  "title": "Bộ lọc trung bình trượt bốn điểm",
+  "group": "G · Xử lý tín hiệu số đơn giản",
+  "difficulty": "Trung bình (nhẹ)",
+  "circuit_type": "Tuần tự",
+  "charter_scale": "~200–280 cell · 1×1 tile",
+  "top_module": "g01_moving_average4",
+  "clock_port": "clk",
+  "has_clock": true,
+  "expected_ff_zero": false,
+  "technology": "sky130A",
+  "std_cell_library": "sky130_fd_sc_hd",
+  "liberty_corner": "tt_025C_1v80",
+  "flow": "LibreLane/OpenROAD",
+  "measured": {
+    "sim": "PASS",
+    "pyref": "PASS",
+    "synth": "PASS",
+    "sta": "PASS",
+    "cells": 260,
+    "flip_flops": 58,
+    "area_um2": 2623.7664,
+    "critical_path_ns": 4.56,
+    "startpoint": "sample_in[1]",
+    "endpoint": "_446_",
+    "power_total_w": "3.28e-04"
+  },
+  "not_run": [
+    "floorplan",
+    "placement",
+    "routing",
+    "drc",
+    "lvs",
+    "gds"
+  ],
+  "source_dir_origin": "G01_FINAL_MENTOR_PACKAGE_v1_0"
+}
