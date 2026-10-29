@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>G01 — Bộ lọc trung bình trượt bốn điểm · Ghi chú thực hiện</title>
+<style>
+:root{
+  --bg:#ffffff; --fg:#1a1d21; --muted:#5c6570; --line:#e3e7eb;
+  --accent:#1f5fa9; --accent-soft:#eef4fb; --code-bg:#f5f7f9;
+  --ok:#137a4d; --ok-bg:#e8f6ee; --warn:#8a5a00; --warn-bg:#fdf4e2;
+  --bad:#a52020; --bad-bg:#fceded; --open:#7a5ba8; --open-bg:#f3eefa;
+  --maxw:960px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#15181c; --fg:#e6e9ec; --muted:#98a2ad; --line:#2a2f36;
+    --accent:#6fa8e0; --accent-soft:#1c2733; --code-bg:#1b1f24;
+    --ok:#5cc08d; --ok-bg:#16291f; --warn:#d8a54a; --warn-bg:#2a2314;
+    --bad:#e88b8b; --bad-bg:#2b1a1a; --open:#b79ad6; --open-bg:#241d2e;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#15181c; --fg:#e6e9ec; --muted:#98a2ad; --line:#2a2f36;
+  --accent:#6fa8e0; --accent-soft:#1c2733; --code-bg:#1b1f24;
+  --ok:#5cc08d; --ok-bg:#16291f; --warn:#d8a54a; --warn-bg:#2a2314;
+  --bad:#e88b8b; --bad-bg:#2b1a1a; --open:#b79ad6; --open-bg:#241d2e;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; background:var(--bg); color:var(--fg);
+  font:16px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  -webkit-text-size-adjust:100%;
+}
+.wrap{max-width:var(--maxw); margin:0 auto; padding:0 16px 96px}
+header.doc{
+  border-bottom:1px solid var(--line); margin-bottom:28px; padding:36px 0 22px;
+}
+header.doc .eyebrow{
+  font-size:12px; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--muted); font-weight:600; margin-bottom:10px;
+}
+header.doc h1{font-size:clamp(24px,4.4vw,34px); line-height:1.25; margin:0 0 14px}
+.badges{display:flex; flex-wrap:wrap; gap:7px; margin-top:6px}
+.badge{
+  font-size:12.5px; padding:3px 10px; border-radius:999px;
+  border:1px solid var(--line); color:var(--muted); background:var(--accent-soft);
+  white-space:nowrap;
+}
+.badge.ok{color:var(--ok); background:var(--ok-bg); border-color:transparent}
+.badge.warn{color:var(--warn); background:var(--warn-bg); border-color:transparent}
+.badge.bad{color:var(--bad); background:var(--bad-bg); border-color:transparent}
+.badge.open{color:var(--open); background:var(--open-bg); border-color:transparent}
+nav.toc{
+  border:1px solid var(--line); border-radius:10px; padding:16px 20px;
+  margin:0 0 32px; background:var(--accent-soft);
+}
+nav.toc p{margin:0 0 8px; font-weight:700; font-size:13px; letter-spacing:.06em;
+  text-transform:uppercase; color:var(--muted)}
+nav.toc ul{margin:0; padding-left:20px}
+nav.toc li{margin:3px 0}
+nav.toc a{color:var(--fg); text-decoration:none}
+nav.toc a:hover{color:var(--accent); text-decoration:underline}
+nav.toc ul ul{padding-left:18px; font-size:14.5px}
+h2{font-size:22px; margin:40px 0 12px; padding-bottom:6px; border-bottom:1px solid var(--line)}
+h3{font-size:18px; margin:28px 0 8px}
+h4{font-size:16px; margin:22px 0 6px; color:var(--muted)}
+p{margin:12px 0}
+a{color:var(--accent)}
+ul,ol{padding-left:24px}
+li{margin:4px 0}
+code{
+  font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+  font-size:.9em; background:var(--code-bg); padding:1.5px 5px; border-radius:4px;
+}
+pre{
+  background:var(--code-bg); border:1px solid var(--line); border-radius:8px;
+  padding:14px 16px; overflow-x:auto; line-height:1.55; font-size:13.5px;
+}
+pre code{background:none; padding:0; font-size:inherit}
+blockquote{
+  margin:16px 0; padding:2px 18px; border-left:3px solid var(--accent);
+  background:var(--accent-soft); border-radius:0 8px 8px 0; color:var(--fg);
+}
+blockquote p{margin:10px 0}
+.tablewrap{overflow-x:auto; margin:16px 0; -webkit-overflow-scrolling:touch}
+table{border-collapse:collapse; width:100%; font-size:14.5px; min-width:420px}
+th,td{border:1px solid var(--line); padding:7px 11px; text-align:left; vertical-align:top}
+th{background:var(--accent-soft); font-weight:650; white-space:nowrap}
+tbody tr:nth-child(even) td{background:color-mix(in srgb, var(--code-bg) 55%, transparent)}
+hr{border:0; border-top:1px solid var(--line); margin:34px 0}
+footer.doc{
+  margin-top:56px; padding-top:18px; border-top:1px solid var(--line);
+  color:var(--muted); font-size:13.5px;
+}
+.themebtn{
+  position:fixed; right:14px; bottom:14px; z-index:10;
+  border:1px solid var(--line); background:var(--bg); color:var(--muted);
+  border-radius:999px; padding:8px 14px; font-size:13px; cursor:pointer;
+}
+.themebtn:hover{color:var(--fg)}
+@media (max-width:640px){
+  .wrap{padding:0 16px 72px}
+  header.doc{padding:26px 0 18px}
+  nav.toc{padding:14px 16px}
+}
+@media print{
+  .themebtn{display:none}
+  nav.toc{break-inside:avoid}
+  pre,table,blockquote{break-inside:avoid}
+  body{font-size:11pt}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="doc">
+  <div class="eyebrow">RTL2GDS · Đề G01 · Ghi chú thực hiện</div>
+  <h1>G01 — Bộ lọc trung bình trượt bốn điểm · Ghi chú thực hiện</h1>
+  <div class="badges"><span class="badge ">🔧 Đã vá và xác minh lại</span><span class="badge ">G · Xử lý tín hiệu số đơn giản</span><span class="badge ">Độ khó: Trung bình (nhẹ)</span><span class="badge ">Loại mạch: Tuần tự</span><span class="badge ok">Mô phỏng: PASS</span><span class="badge ">Tổng hợp: 260 cell · 58 FF</span><span class="badge ">Đường tới hạn: 4,56 ns</span><span class="badge warn">Physical design: CHƯA CHẠY</span></div>
+</header>
+<nav class="toc"><p>Mục lục</p><ul><li><a href="#1-bai-toan-nay-thuc-chat-la-gi">1. Bài toán này thực chất là gì</a></li><li><a href="#2-ban-chat-ky-thuat-co-che-hoat-dong">2. Bản chất kỹ thuật — cơ chế hoạt động</a></li><ul><li><a href="#2-1-bo-tich-luy-truot-bien-o-n-thanh-o-1">2.1 Bộ tích luỹ trượt: biến O(N) thành O(1)</a></li><li><a href="#2-2-nut-that-chuoi-carry-khong-phai-phep-chia">2.2 Nút thắt: chuỗi carry, không phải phép chia</a></li><li><a href="#2-3-vi-sao-tong-phai-rong-10-bit">2.3 Vì sao tổng phải rộng 10 bit</a></li></ul><li><a href="#3-doc-ma-nguon-rtl-lam-gi-tung-dong-quan-trong">3. Đọc mã nguồn: RTL làm gì, từng dòng quan trọng</a></li><ul><li><a href="#3-1-chon-cong-thuc-theo-giai-doan">3.1 Chọn công thức theo giai đoạn</a></li><li><a href="#3-2-doc-va-ghi-cung-mot-dia-chi-trong-mot-chu-ky">3.2 Đọc và ghi cùng một địa chỉ trong một chu kỳ</a></li><li><a href="#3-3-bo-dem-bao-hoa-khong-cuon-vong">3.3 Bộ đếm bão hoà, không cuộn vòng</a></li><li><a href="#3-4-hai-nguong-lech-nhau-mot-don-vi-va-ca-hai-deu-dung">3.4 Hai ngưỡng lệch nhau một đơn vị — và cả hai đều đúng</a></li><li><a href="#3-5-ban-tham-chieu-trong-cung-ho-so">3.5 Bản tham chiếu trong cùng hồ sơ</a></li></ul><li><a href="#4-vi-sao-chon-kien-truc-nay">4. Vì sao chọn kiến trúc này</a></li><li><a href="#5-cach-thuc-hien-lo-trinh-8-buoc-tu-dac-ta-toi-gdsii">5. Cách thực hiện — lộ trình 8 bước từ đặc tả tới GDSII</a></li><li><a href="#6-so-lieu-that-da-do-duoc-va-cach-doc-chung">6. Số liệu thật đã đo được và cách đọc chúng</a></li><ul><li><a href="#6-1-con-so-58-flip-flop-chung-minh-gi">6.1 Con số 58 flip-flop chứng minh gì</a></li><li><a href="#6-2-con-so-4-56-ns-chung-minh-gi">6.2 Con số 4,56 ns chứng minh gì</a></li><li><a href="#6-3-con-so-cong-suat-chung-minh-gi">6.3 Con số công suất chứng minh gì</a></li></ul><li><a href="#7-tra-loi-cac-cau-hoi-ky-thuat-cua-charter-muc-2">7. Trả lời các câu hỏi kỹ thuật của Charter (mục 2)</a></li><ul><li><a href="#cau-1-giu-bon-mau-ton-32-o-nho-bao-cao-co-dung-32-khong-phan-du-dung-vao-viec-gi">Câu 1 — Giữ bốn mẫu tốn 32 ô nhớ; báo cáo có đúng 32 không, phần dư dùng vào việc gì?</a></li><li><a href="#cau-2-chia-cho-4-bang-dich-phai-2-bit-ton-bao-nhieu-cell">Câu 2 — Chia cho 4 bằng dịch phải 2 bit tốn bao nhiêu cell?</a></li><li><a href="#cau-3-truoc-khi-du-bon-mau-thi-dau-ra-la-gi-va-vi-sao-can-co-ket-qua-hop-le">Câu 3 — Trước khi đủ bốn mẫu thì đầu ra là gì, và vì sao cần cờ &quot;kết quả hợp lệ&quot;?</a></li></ul><li><a href="#8-tra-loi-cau-phan-tich-rieng-charter-muc-9">8. Trả lời câu phân tích riêng (Charter mục 9)</a></li><li><a href="#9-nhung-cho-sinh-vien-hay-sai-va-cach-phat-hien">9. Những chỗ sinh viên hay sai và cách phát hiện</a></li><li><a href="#10-cau-hoi-mentor-nen-dat-khi-bao-ve">10. Câu hỏi mentor nên đặt khi bảo vệ</a></li><li><a href="#11-gioi-han-da-chung-minh-duoc-gi-chua-chung-minh-duoc-gi">11. Giới hạn: đã chứng minh được gì, chưa chứng minh được gì</a></li><ul><li><a href="#da-chung-minh">Đã chứng minh</a></li><li><a href="#chua-chung-minh-duoc">Chưa chứng minh được</a></li></ul></ul></nav>
+<main>
+<hr>
+<h2 id="1-bai-toan-nay-thuc-chat-la-gi">1. Bài toán này thực chất là gì</h2>
+<p>Bề ngoài: "làm trơn số đo nhiệt độ để màn hình không nhảy". Bản chất: <strong>đánh đổi nhiễu lấy
+độ trễ</strong>, và làm việc đó bằng phần cứng rẻ nhất có thể.</p>
+<p>Cảm biến nhiệt độ qua ADC cho một chuỗi mẫu <code>x[n]</code> = giá trị thật + nhiễu. Nhiễu ở đây là
+tổng của nhiễu nhiệt, nhiễu điện và nhiễu lượng tử hoá ±½ LSB của ADC — gần như độc lập
+giữa các mẫu. Trung bình <code>N</code> mẫu độc lập làm <strong>biên độ nhiễu giảm √N lần</strong> trong khi giá
+trị thật giữ nguyên. Với <code>N = 4</code>: nhiễu giảm <strong>2 lần</strong>, tức được thêm <strong>1 bit độ phân giải
+hiệu dụng</strong>.</p>
+<p>Giá phải trả là <strong>độ trễ nhóm 1,5 mẫu</strong>: một thay đổi nhiệt độ thật cần 4 mẫu mới hiện đủ
+trên màn hình. Với nhiệt độ phòng, đây là đánh đổi gần như miễn phí. Với một tín hiệu nhanh
+thì không.</p>
+<p>Bài toán còn có tầng thứ hai, chính là chỗ Charter mục 10 nhắm tới: <strong>giữ bốn mẫu 8 bit đã
+tốn 32 flip-flop</strong>, nhiều hơn toàn bộ phần tính toán. Một bộ lọc số, về mặt phần cứng, chủ
+yếu là <strong>bộ nhớ</strong>, không phải bộ tính. Con số đo được xác nhận điều đó: 32/58 = <strong>55 %</strong> ô
+nhớ chỉ để nhớ cửa sổ.</p>
+<h2 id="2-ban-chat-ky-thuat-co-che-hoat-dong">2. Bản chất kỹ thuật — cơ chế hoạt động</h2>
+<h3 id="2-1-bo-tich-luy-truot-bien-o-n-thanh-o-1">2.1 Bộ tích luỹ trượt: biến O(N) thành O(1)</h3>
+<p>Cách ngây thơ: mỗi mẫu, cộng lại cả bốn phần tử của cửa sổ. Tốn <code>N−1 = 3</code> phép cộng.</p>
+<p>Cách RTL dùng: giữ <strong>một biến tổng</strong> và cập nhật nó bằng <strong>hai phép</strong> bất kể <code>N</code> lớn bao
+nhiêu:</p>
+<pre><code>   sum[n] = sum[n−1] + x[n] − x[n−N]
+                       ▲       ▲
+                       │       └── mẫu VỪA RỜI cửa sổ
+                       └────────── mẫu VỪA VÀO cửa sổ
+</code></pre>
+<p>Bất biến giữ cho công thức đúng: <code>sum</code> <strong>luôn bằng</strong> tổng các mẫu đang nằm trong cửa sổ
+(INV-3). Nó đúng vì mỗi bước ta cộng đúng cái vào và trừ đúng cái ra.</p>
+<p>Điều then chốt và hay bị bỏ sót: <strong>vẫn phải giữ đủ N mẫu</strong> — vì muốn trừ <code>x[n−N]</code> thì phải
+biết nó bằng bao nhiêu. Bộ tích luỹ trượt tiết kiệm <strong>phép tính</strong>, <strong>không</strong> tiết kiệm <strong>bộ
+nhớ</strong>. Với <code>N = 4</code> thì phép tính vốn đã rẻ, nên lợi ích gần như bằng 0 — phân tích trung
+thực ở <code>03_ARCHITECTURE/tradeoff.md</code> §2.1. Lợi ích thật chỉ xuất hiện khi <code>N</code> lớn.</p>
+<h3 id="2-2-nut-that-chuoi-carry-khong-phai-phep-chia">2.2 Nút thắt: chuỗi carry, không phải phép chia</h3>
+<p>Đây là điểm đối chiếu thú vị với A01. Ở A01, nút thắt là chuỗi carry 8 tầng của bộ cộng
+ripple. Ở G01, <strong>vẫn là chuỗi carry</strong> — chỉ khác là nó nằm giữa hai thanh ghi:</p>
+<pre><code>   carry[i+1] cần carry[i] đã ổn định
+   ⇒ 6 cell maj3_1 NỐI TIẾP trên đường tới hạn
+   ⇒ 6 × 0,39 ns = 2,35 ns  /  4,56 ns tổng  =  52 %
+</code></pre>
+<p><code>maj3</code> là cổng đa số 3 đầu vào — chính là hàm carry-out của một full adder. Sáu cell nối
+tiếp là chuỗi carry, đo được trong <code>timing_report_max.txt</code>.</p>
+<p>Còn phép chia cho 4? <strong>Không tốn một cell nào.</strong> <code>sum_next &gt;&gt; 2</code> với hằng số dịch chỉ là
+đổi chỉ số dây: <code>avg_out[i]</code> nhận <code>sum_next[i+2]</code>. Ba bằng chứng: không có cell dịch nào
+trong 260 cell; <code>avg_out</code> chỉ có 8 FF; và <strong>endpoint của đường tới hạn là <code>sum_q[9]</code>, không
+phải <code>avg_out</code></strong>.</p>
+<p><strong>Bài học:</strong> trong một bộ lọc, phép "chia" trông đáng sợ nhưng miễn phí, còn phép "cộng"
+trông tầm thường lại là nút thắt. Trực giác từ phần mềm dẫn sai ở đây.</p>
+<h3 id="2-3-vi-sao-tong-phai-rong-10-bit">2.3 Vì sao tổng phải rộng 10 bit</h3>
+<p><code>4 × 255 = 1020</code>, cần 10 bit. Cộng vào biến 8 bit sẽ tràn và làm hỏng hoàn toàn kết quả —
+Charter mục 10 nêu đích danh đây là "chỗ hay tắc".</p>
+<p>Hồ sơ có <strong>chứng minh hình thức</strong> cho công thức <code>SUM_W = W + 2</code>, trong <code>golden_model/bounds.py</code>:</p>
+<pre><code class="language-python">for w in range(1,65):
+    max_sum = 4*((1 &lt;&lt; w)-1)
+    assert max_sum &lt; (1 &lt;&lt; (w+2))
+</code></pre>
+<p>Kết quả nằm trong <code>python_reference_run.log</code>: <code>G01 accumulator-width proof PASS for W=1..64</code>.
+Đây là <strong>bằng chứng dạng chứng minh</strong>, mạnh hơn kiểm mẫu, và là một trong số rất ít chỗ
+trong cả ba đề có được loại bằng chứng này.</p>
+<h2 id="3-doc-ma-nguon-rtl-lam-gi-tung-dong-quan-trong">3. Đọc mã nguồn: RTL làm gì, từng dòng quan trọng</h2>
+<h3 id="3-1-chon-cong-thuc-theo-giai-doan">3.1 Chọn công thức theo giai đoạn</h3>
+<pre><code class="language-systemverilog">always_comb begin                                       // dòng 26
+    if (count_q &lt; 3'd4)
+        sum_next = sum_q + sample_ext;                  // NẠP ĐẦY: chưa trừ
+    else
+        sum_next = sum_q + sample_ext - oldest_ext;     // ỔN ĐỊNH: có trừ
+end
+</code></pre>
+<p>Ba mẫu đầu và <strong>cả mẫu thứ tư</strong> dùng nhánh trên — vì lúc đó cửa sổ chưa đầy, chưa có gì để
+đẩy ra. Từ mẫu thứ năm mới dùng nhánh dưới. Cell <code>mux2_1</code> <code>_374_</code> trên đường tới hạn chính
+là bộ chọn này.</p>
+<h3 id="3-2-doc-va-ghi-cung-mot-dia-chi-trong-mot-chu-ky">3.2 Đọc và ghi cùng một địa chỉ trong một chu kỳ</h3>
+<pre><code class="language-systemverilog">assign oldest_ext = {{(SUM_W-W){1'b0}}, sample_mem[wr_ptr]};   // dòng 24 — ĐỌC
+...
+sample_mem[wr_ptr] &lt;= sample_in;                                // dòng 48 — GHI
+</code></pre>
+<p>Cùng chỉ số <code>wr_ptr</code>. Vì phép đọc là tổ hợp (trước sườn) và phép ghi là <code>&lt;=</code> (sau sườn),
+giá trị đọc được là <strong>mẫu cũ</strong> — đúng cái cần trừ. Ô vừa bị đọc cũng là ô sắp bị ghi đè:
+<strong>mẫu cũ nhất rời cửa sổ và mẫu mới vào cùng một ô</strong>. Đây là cơ chế "bộ đệm vòng" gọn nhất
+có thể.</p>
+<p>Hệ quả phần cứng chỉ thấy được trên netlist: Yosys <strong>nhân đôi thanh ghi địa chỉ</strong> thành
+<code>_000_</code>/<code>_001_</code> để tách cổng đọc khỏi cổng ghi — <strong>2 flip-flop dư</strong>. Bằng chứng và trích
+log ở <code>03_ARCHITECTURE/block_diagram.md</code> §3.</p>
+<h3 id="3-3-bo-dem-bao-hoa-khong-cuon-vong">3.3 Bộ đếm bão hoà, không cuộn vòng</h3>
+<pre><code class="language-systemverilog">if (count_q &lt; 3'd4)
+    count_q &lt;= count_q + 3'd1;                          // dòng 51–52
+</code></pre>
+<p><code>count_q</code> rộng 3 bit (0…7). Nếu bỏ điều kiện bão hoà, nó đếm tới 7 rồi <strong>cuộn về 0</strong> ⇒
+điều kiện <code>count_q &lt; 4</code> lại đúng ⇒ mạch <strong>ngừng trừ mẫu cũ</strong> ⇒ <code>sum_q</code> cộng dồn vô hạn.
+Bộ lọc hỏng hoàn toàn từ mẫu thứ 9. Ba ký tự <code>&lt; 4</code> gánh cả tính đúng đắn dài hạn.</p>
+<h3 id="3-4-hai-nguong-lech-nhau-mot-don-vi-va-ca-hai-deu-dung">3.4 Hai ngưỡng lệch nhau một đơn vị — và cả hai đều đúng</h3>
+<pre><code class="language-systemverilog">if (count_q &lt; 3'd4)  …                  // dòng 27 và 51 : ngưỡng 4
+if (count_q &gt;= 3'd3) begin              // dòng 56       : ngưỡng 3
+    valid_out &lt;= 1'b1;
+    avg_out   &lt;= sum_next &gt;&gt; 2;
+end
+</code></pre>
+<p>Cả ba đọc <code>count_q</code> <strong>trước khi tăng</strong>, tức "số mẫu đã nhận <strong>trước</strong> mẫu này". Tại mẫu
+thứ tư, <code>count_q = 3</code>: <code>3 &lt; 4</code> ⇒ không trừ (đúng, cửa sổ vừa đủ đầy); <code>3 &gt;= 3</code> ⇒ đã có kết
+quả (đúng). Tại mẫu thứ năm, <code>count_q = 4</code>: có trừ, và <code>wr_ptr</code> vừa cuộn về 0 nên trừ đúng
+mẫu thứ nhất.</p>
+<p>Đây là chỗ dễ viết nhầm nhất của cả file, và chỉ <strong>ca mẫu 4 và mẫu 5</strong> mới bắt được. Cả hai
+ca đó đều đã PASS trong mô phỏng thật.</p>
+<h3 id="3-5-ban-tham-chieu-trong-cung-ho-so">3.5 Bản tham chiếu trong cùng hồ sơ</h3>
+<p><code>g01_direct_sum_reference.sv</code> hiện thực cách cộng thẳng:</p>
+<pre><code class="language-systemverilog">always_comb begin
+    total_next = {2'b0,mem[0]} + {2'b0,mem[1]} + {2'b0,mem[2]} + {2'b0,mem[3]};
+end
+</code></pre>
+<p>Không có <code>sum_q</code> ⇒ ít hơn 10 FF, nhưng cộng 4 số hạng mỗi chu kỳ. File này <strong>không được
+tổng hợp</strong> (top là <code>g01_moving_average4</code>), nên chưa có số liệu để so sánh — một thí nghiệm
+nhỏ, rẻ và rất đáng làm, nêu ở <code>tradeoff.md</code> §5.</p>
+<h2 id="4-vi-sao-chon-kien-truc-nay">4. Vì sao chọn kiến trúc này</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Quyết định</th>
+<th>Lý do kỹ thuật</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Bộ tích luỹ trượt</td>
+<td>Số phép cộng <strong>không tăng theo N</strong> ⇒ kiến trúc mở rộng được. Với N=4 gần như hoà vốn, nhưng đúng về nguyên tắc</td>
+</tr>
+<tr>
+<td>Bộ nhớ vòng + <code>wr_ptr</code> thay vì thanh ghi dịch</td>
+<td>Mỗi mẫu chỉ <strong>ghi 1 ô</strong> thay vì dịch cả 4 ⇒ công suất chuyển mạch thấp hơn hẳn. Với tuần tự chiếm 77,3 % công suất, đây là lựa chọn đúng</td>
+</tr>
+<tr>
+<td><code>SUM_W = W + 2</code></td>
+<td>Chặn tràn, có chứng minh hình thức</td>
+</tr>
+<tr>
+<td><code>&gt;&gt; 2</code> thay bộ chia</td>
+<td>0 cell. Đánh đổi: khoá cứng cửa sổ ở luỹ thừa 2</td>
+</tr>
+<tr>
+<td>Thanh ghi hoá <code>avg_out</code></td>
+<td>Đầu ra sạch glitch, cắt đường tới hạn trước chân ra. Giá: 8 FF</td>
+</tr>
+<tr>
+<td>Cờ <code>valid_out</code> riêng</td>
+<td><code>0</code> là giá trị trung bình hợp lệ ⇒ <strong>không thể</strong> báo "chưa sẵn sàng" bằng giá trị</td>
+</tr>
+<tr>
+<td><code>valid_in</code> làm enable toàn cục</td>
+<td>Bộ lọc chạy theo <strong>nhịp mẫu</strong>, độc lập với tần số clock</td>
+</tr>
+<tr>
+<td><code>sample_in</code> <strong>không</strong> qua thanh ghi đệm</td>
+<td>Tiết kiệm 8 FF và 1 chu kỳ. Giá: đường tới hạn bắt đầu từ chân vào, phụ thuộc <code>input_delay</code></td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="5-cach-thuc-hien-lo-trinh-8-buoc-tu-dac-ta-toi-gdsii">5. Cách thực hiện — lộ trình 8 bước từ đặc tả tới GDSII</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th style="text-align: right;">Bước</th>
+<th>Việc</th>
+<th>Đầu ra</th>
+<th>Trạng thái G01</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">1</td>
+<td>Suy bảng hành vi + chặn độ rộng từ Charter mục 1, 8, 10</td>
+<td><code>functional_spec.md</code> §3, §3.2</td>
+<td>✅</td>
+</tr>
+<tr>
+<td style="text-align: right;">2</td>
+<td><strong>Chứng minh</strong> độ rộng tích luỹ trước khi viết RTL</td>
+<td><code>bounds.py</code></td>
+<td>✅ <strong>PASS <code>W=1..64</code></strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">3</td>
+<td>Viết mô hình chuẩn hành vi, kiểm tương đương hai cách tính</td>
+<td><code>reference_model.py</code></td>
+<td>⚠️ có file, <strong>thiếu log</strong> (§<code>known_issues.md</code> C)</td>
+</tr>
+<tr>
+<td style="text-align: right;">4</td>
+<td>Viết RTL</td>
+<td><code>g01_moving_average4.sv</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td style="text-align: right;">5</td>
+<td>Testbench + mô phỏng</td>
+<td><code>simulation.log</code></td>
+<td>⚠️ <strong>dừng ở mẫu 6</strong> — lỗi testbench</td>
+</tr>
+<tr>
+<td style="text-align: right;">6</td>
+<td>Tổng hợp</td>
+<td><code>synth_stat.txt</code></td>
+<td>✅ <strong>260 cell · 58 FF · 2 623,7664 µm²</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">7</td>
+<td>SDC + STA</td>
+<td><code>timing_report_max.txt</code></td>
+<td>✅ <strong>arrival 4,56 ns · slack 5,36 ns</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">8</td>
+<td>P&amp;R → DRC/LVS → GDS</td>
+<td><code>06_GDSII/gds/</code></td>
+<td>⬜ chưa chạy</td>
+</tr>
+</tbody>
+</table></div>
+<p>Điểm đáng học về quy trình: <strong>bước 2 là một chứng minh, không phải một phép thử.</strong> Làm
+chứng minh trước khi viết RTL loại bỏ hẳn nguy cơ tràn — loại lỗi mà mô phỏng chỉ bắt được
+nếu đúng ca biên được nghĩ ra.</p>
+<h2 id="6-so-lieu-that-da-do-duoc-va-cach-doc-chung">6. Số liệu thật đã đo được và cách đọc chúng</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Chỉ số</th>
+<th style="text-align: right;">Giá trị</th>
+<th>Nguồn</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Chứng minh độ rộng tích luỹ</td>
+<td style="text-align: right;"><strong>PASS</strong> <code>W = 1…64</code></td>
+<td><code>python_reference_run.log</code></td>
+</tr>
+<tr>
+<td>Mô phỏng RTL</td>
+<td style="text-align: right;"><strong>RAN_WITH_ISSUES</strong> — <code>FATAL g01_tb.sv:22</code>, <code>Time: 76</code></td>
+<td><code>simulation.log</code></td>
+</tr>
+<tr>
+<td>Biên dịch Icarus</td>
+<td style="text-align: right;"><strong>không lỗi</strong></td>
+<td><code>iverilog_compile.log</code> rỗng</td>
+</tr>
+<tr>
+<td>Tổng hợp</td>
+<td style="text-align: right;"><strong>PASS</strong></td>
+<td><code>yosys.log</code></td>
+</tr>
+<tr>
+<td>Tổng số cell</td>
+<td style="text-align: right;"><strong>260</strong></td>
+<td><code>synth_stat.txt</code></td>
+</tr>
+<tr>
+<td>Flip-flop</td>
+<td style="text-align: right;"><strong>58</strong></td>
+<td>như trên</td>
+</tr>
+<tr>
+<td>Diện tích</td>
+<td style="text-align: right;"><strong>2 623,7664 µm²</strong></td>
+<td>như trên</td>
+</tr>
+<tr>
+<td>STA</td>
+<td style="text-align: right;"><strong>PASS</strong> (<code>real_clock</code>)</td>
+<td><code>06_GDSII/sta/</code></td>
+</tr>
+<tr>
+<td>Startpoint → Endpoint</td>
+<td style="text-align: right;"><strong><code>sample_in[1]</code></strong> → <strong><code>_446_</code></strong> (= <code>sum_q[9]</code>)</td>
+<td><code>summary.txt</code> + netlist</td>
+</tr>
+<tr>
+<td>Data arrival time</td>
+<td style="text-align: right;"><strong>4,56 ns</strong> (gồm 1,00 ns input delay)</td>
+<td><code>timing_report_max.txt</code></td>
+</tr>
+<tr>
+<td>Data required time</td>
+<td style="text-align: right;"><strong>9,93 ns</strong></td>
+<td>như trên</td>
+</tr>
+<tr>
+<td>Slack</td>
+<td style="text-align: right;"><strong>5,36 ns (MET)</strong></td>
+<td>như trên</td>
+</tr>
+<tr>
+<td>WNS / TNS (max)</td>
+<td style="text-align: right;"><strong>0,00 / 0,00</strong></td>
+<td><code>wns.txt</code>, <code>tns.txt</code></td>
+</tr>
+<tr>
+<td>Số cell trên đường tới hạn</td>
+<td style="text-align: right;"><strong>14</strong></td>
+<td><code>timing_report_max.txt</code></td>
+</tr>
+<tr>
+<td>Công suất tổng</td>
+<td style="text-align: right;"><strong>3,28e-04 W</strong></td>
+<td><code>power_report.txt</code></td>
+</tr>
+<tr>
+<td>— tuần tự / tổ hợp / clock</td>
+<td style="text-align: right;"><strong>77,3 % / 22,7 % / 0,0 %</strong></td>
+<td>như trên</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="6-1-con-so-58-flip-flop-chung-minh-gi">6.1 Con số 58 flip-flop chứng minh gì</h3>
+<p>Nó <strong>chứng minh</strong> rằng cửa sổ <strong>đúng 32 ô nhớ</strong> như Charter dự đoán, và mọi ô nhớ còn lại
+đều truy được về một dòng RTL — trừ 2 ô do công cụ sinh:</p>
+<pre><code>  sample_mem[0:3][7:0]   32   ← đúng 32 như Charter mục 2 câu 1 hỏi
+  sum_q[9:0]             10
+  avg_out[7:0]            8
+  count_q[2:0]            3
+  wr_ptr[1:0]             2
+  bản sao con trỏ ĐỌC     2   ← do pass `memory` của Yosys, KHÔNG có trong RTL
+  valid_out               1
+  ──────────────────────────
+  TỔNG                   58   ✅ khớp synth_stat.txt
+</code></pre>
+<p>Nó <strong>không chứng minh</strong> mạch đúng chức năng (đó là việc của mô phỏng), và <strong>không</strong> nói gì
+về hành vi sau P&amp;R.</p>
+<h3 id="6-2-con-so-4-56-ns-chung-minh-gi">6.2 Con số 4,56 ns chứng minh gì</h3>
+<p>Ở <strong>điều kiện đã nêu</strong> (typical 25 °C 1,80 V, sau tổng hợp, chưa ký sinh dây, clock lý
+tưởng), đường dài nhất từ chân <code>sample_in[1]</code> tới <code>sum_q[9]</code> mất 4,56 ns, còn dư 5,36 ns.</p>
+<p>Nó <strong>không</strong> nói khối chạy được ở 100 MHz hay bất kỳ tần số nào. Đặc biệt với G01, <strong>1,00 ns
+của con số đó là giả định SDC về tầng ADC</strong>, không phải phần cứng của khối — chiếm 22 %.
+Nếu tầng trước chậm hơn giả định, slack co lại đúng bằng phần chênh.</p>
+<p>Nó <strong>nói thêm</strong> một điều hữu ích: <strong>52 % độ trễ nằm ở 6 cell <code>maj3_1</code> nối tiếp</strong> — chuỗi
+carry. Muốn nhanh hơn thì phải tấn công chuỗi carry (carry-lookahead, carry-save), không
+phải tấn công phép chia hay bộ nhớ.</p>
+<h3 id="6-3-con-so-cong-suat-chung-minh-gi">6.3 Con số công suất chứng minh gì</h3>
+<p><code>Sequential 77,3 %</code> xác nhận G01 là <strong>mạch nặng về bộ nhớ</strong>. <code>Clock 0,00 W</code> <strong>không</strong> nghĩa
+là cây clock miễn phí — nó nghĩa là <strong>chưa có cây clock</strong> (CTS chưa chạy); với 58 FF, cây
+clock sau CTS nhiều khả năng sẽ là nhóm tốn nhất. Toàn bộ là <strong>ước lượng với hoạt động mặc
+định</strong>, không lấy từ VCD thật.</p>
+<h2 id="7-tra-loi-cac-cau-hoi-ky-thuat-cua-charter-muc-2">7. Trả lời các câu hỏi kỹ thuật của Charter (mục 2)</h2>
+<h3 id="cau-1-giu-bon-mau-ton-32-o-nho-bao-cao-co-dung-32-khong-phan-du-dung-vao-viec-gi">Câu 1 — Giữ bốn mẫu tốn 32 ô nhớ; báo cáo có đúng 32 không, phần dư dùng vào việc gì?</h3>
+<p><strong>Đúng 32 cho cửa sổ</strong> — đã định danh trên netlist: 32 cell <code>dfxtp_1</code> có
+<code>Q = sample_mem[i][j]</code>. Tổng đo được là <strong>58</strong>, tức <strong>dư 26</strong>. Phân bổ đầy đủ, không còn ô
+nhớ nào không rõ nguồn gốc:</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Phần dư</th>
+<th style="text-align: right;">FF</th>
+<th>Dùng vào việc gì</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sum_q[9:0]</code></td>
+<td style="text-align: right;">10</td>
+<td>Bộ tích luỹ trượt, rộng <code>W+2</code> để chống tràn</td>
+</tr>
+<tr>
+<td><code>avg_out[7:0]</code></td>
+<td style="text-align: right;">8</td>
+<td>Thanh ghi hoá đầu ra ⇒ không glitch</td>
+</tr>
+<tr>
+<td><code>count_q[2:0]</code></td>
+<td style="text-align: right;">3</td>
+<td>Đếm mẫu, bão hoà ở 4</td>
+</tr>
+<tr>
+<td><code>wr_ptr[1:0]</code></td>
+<td style="text-align: right;">2</td>
+<td>Con trỏ vòng ghi</td>
+</tr>
+<tr>
+<td>Bản sao con trỏ <strong>đọc</strong></td>
+<td style="text-align: right;">2</td>
+<td><strong>Do Yosys sinh</strong>, không có trong RTL — tách cổng đọc/ghi của bộ nhớ</td>
+</tr>
+<tr>
+<td><code>valid_out</code></td>
+<td style="text-align: right;">1</td>
+<td>Cờ kết quả hợp lệ</td>
+</tr>
+<tr>
+<td><strong>Tổng dư</strong></td>
+<td style="text-align: right;"><strong>26</strong></td>
+<td></td>
+</tr>
+</tbody>
+</table></div>
+<p>So với "dấu hiệu làm đúng ≈ 34–35" của Charter mục 10: chênh <strong>+23…+24</strong>, và toàn bộ phần
+chênh là <code>sum_q</code> (10) + <code>avg_out</code> (8) + <code>wr_ptr</code> (2) + bản sao con trỏ (2) + phần <code>count_q</code>
+vượt dự đoán. Charter giả định một hiện thực <strong>không</strong> có bộ tích luỹ và <strong>không</strong> thanh
+ghi hoá đầu ra.</p>
+<h3 id="cau-2-chia-cho-4-bang-dich-phai-2-bit-ton-bao-nhieu-cell">Câu 2 — Chia cho 4 bằng dịch phải 2 bit tốn bao nhiêu cell?</h3>
+<p><strong>0 cell.</strong> Ba bằng chứng độc lập:</p>
+<ol>
+<li>Bảng phân bố 260 cell <strong>không có cell dịch nào</strong> (không barrel shifter, không bộ chia).</li>
+<li><code>avg_out</code> chỉ có <strong>8 flip-flop</strong> cho 8 bit ra — đúng bằng độ rộng cổng, không phần cứng phụ.</li>
+<li><strong>Endpoint của đường tới hạn là <code>sum_q[9]</code>, không phải <code>avg_out</code></strong> — nếu <code>&gt;&gt;2</code> tốn logic,
+   <code>avg_out</code> đã phải xuất hiện trong báo cáo STA.</li>
+</ol>
+<p><code>&gt;&gt; 2</code> với hằng số chỉ là <strong>đổi chỉ số dây</strong>: <code>avg_out[i] ← sum_next[i+2]</code>. Cái thật sự tốn
+là hai bit thấp <code>sum_next[1:0]</code> vẫn phải được bộ cộng tính ra rồi vứt — nhưng chúng cần
+thiết cho chuỗi carry nên không cắt được.</p>
+<h3 id="cau-3-truoc-khi-du-bon-mau-thi-dau-ra-la-gi-va-vi-sao-can-co-ket-qua-hop-le">Câu 3 — Trước khi đủ bốn mẫu thì đầu ra là gì, và vì sao cần cờ "kết quả hợp lệ"?</h3>
+<p><strong>Đầu ra là giá trị cũ của <code>avg_out</code></strong> — sau reset là <code>8'd0</code> (dòng 43). Không phải rác,
+nhưng cũng không phải trung bình của gì cả.</p>
+<p>Cần cờ riêng vì <strong><code>0</code> là một giá trị trung bình hoàn toàn hợp lệ</strong>: nếu bốn mẫu đầu đều
+bằng 0 thì trung bình đúng bằng 0. Miền giá trị <code>0…255</code> của <code>avg_out</code> <strong>đã dùng hết</strong>,
+không còn mã nào dư để làm "mã không hợp lệ". Một bit riêng là cách duy nhất.</p>
+<p>Cùng lập luận áp dụng cho ba tình huống khác: <code>valid_in</code> ngắt quãng, reset giữa chừng, và
+ba mẫu đầu sau khi bật nguồn. Chi phí: <strong>1 flip-flop (1,7 % ô nhớ)</strong> — rẻ hơn rất nhiều so
+với một số nhiệt độ sai trên màn hình.</p>
+<h2 id="8-tra-loi-cau-phan-tich-rieng-charter-muc-9">8. Trả lời câu phân tích riêng (Charter mục 9)</h2>
+<blockquote>
+<p><em>"Thiết kế cần bốn thanh ghi 8 bit. Đối chiếu số flip-flop trong báo cáo với 32 và giải
+thích phần dư. Nêu thêm cách làm tiết kiệm hơn dùng bộ tích luỹ trượt, và nó tiết kiệm
+được gì."</em></p>
+</blockquote>
+<p><strong>Phần đối chiếu 32 ↔ 58:</strong> đã trả lời đầy đủ ở §7 Câu 1 — đúng 32 cho cửa sổ, dư 26 phân
+bổ hết, trong đó có <strong>2 flip-flop do công cụ sinh mà RTL không có</strong>.</p>
+<p><strong>Phần "cách làm tiết kiệm hơn dùng bộ tích luỹ trượt":</strong> ở đây phải trả lời <strong>trung thực
+và ngược với kỳ vọng thông thường</strong> — <strong>RTL đã dùng bộ tích luỹ trượt rồi</strong>
+(<code>sum_q &lt;= sum_q + x − oldest</code>, dòng 30 và 49), và với <code>N = 4</code> <strong>nó gần như không tiết kiệm
+được gì</strong>.</p>
+<p>Lập luận đếm được:</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th></th>
+<th>Tích luỹ trượt (RTL hiện tại)</th>
+<th>Cộng thẳng (<code>g01_direct_sum_reference.sv</code>)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Số hạng phải cộng mỗi chu kỳ</td>
+<td><code>sum_q</code>, <code>+x</code>, <code>−oldest</code> ⇒ <strong>3</strong></td>
+<td><code>mem[0..3]</code> ⇒ <strong>4</strong></td>
+</tr>
+<tr>
+<td>Ô nhớ phụ</td>
+<td><strong>+10 FF</strong> (<code>sum_q</code>)</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Vẫn phải giữ 4 mẫu?</td>
+<td><strong>Có</strong> — cần <code>oldest</code> để trừ</td>
+<td>Có</td>
+</tr>
+</tbody>
+</table></div>
+<p>Chênh lệch "3 số hạng so với 4 số hạng" là rất nhỏ, trong khi phải trả <strong>10 flip-flop</strong>.
+<strong>Bộ tích luỹ trượt tiết kiệm phép tính, không tiết kiệm bộ nhớ</strong> — và với <code>N = 4</code> thì phép
+tính vốn đã rẻ.</p>
+<p><strong>Nó tiết kiệm được gì, chính xác:</strong> số số hạng phải cộng <strong>luôn là 3, không phụ thuộc N</strong>.
+Cộng thẳng cần <code>N</code> số hạng ⇒ độ sâu tổ hợp tăng theo <code>log₂N</code> và số cổng tăng theo <code>N</code>. Với
+<code>N = 16</code> hay <code>N = 64</code>, tích luỹ trượt thắng áp đảo; với <code>N = 4</code> thì hoà. Vậy lựa chọn ở đây
+là <strong>theo kiến trúc mở rộng được</strong>, không phải theo tiết kiệm tức thời — và nói thẳng điều
+đó có giá trị hơn là khẳng định một lợi ích không có thật.</p>
+<p><strong>Cách thật sự tiết kiệm hơn cho <code>N = 4</code></strong> (bảng đầy đủ ở <code>tradeoff.md</code> §2.2):</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Phương án</th>
+<th>Tiết kiệm</th>
+<th>Giá phải trả</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Bỏ <code>sum_q</code>, cộng thẳng 4 mẫu</td>
+<td><strong>−10 FF</strong> (58 → 48, ≈ −17 %)</td>
+<td>Đường tổ hợp sâu hơn; không mở rộng được</td>
+</tr>
+<tr>
+<td>Bỏ thanh ghi <code>avg_out</code></td>
+<td><strong>−8 FF</strong> (≈ −14 %)</td>
+<td>Đầu ra thành tổ hợp ⇒ có glitch</td>
+</tr>
+<tr>
+<td>Thanh ghi dịch thay bộ nhớ vòng</td>
+<td><strong>−4 FF</strong> + bỏ 8 cell <code>mux4_2</code></td>
+<td>Phải ghi <strong>cả 4 ô mỗi mẫu</strong> ⇒ công suất chuyển mạch tăng, xấu vì tuần tự đã chiếm 77,3 %</td>
+</tr>
+</tbody>
+</table></div>
+<blockquote>
+<p>⬜ <strong>Chưa có số liệu định lượng cho các phương án trên.</strong>
+<code>g01_direct_sum_reference.sv</code> <strong>chưa được tổng hợp</strong> — <code>synth.ys</code> đặt
+<code>hierarchy -check -top g01_moving_average4</code>. Điều kiện để so sánh bằng số: đổi <code>-top</code>,
+chạy lại <code>02_run_synth.sh</code> và <code>03_run_sta.tcl</code>, rồi so cell / FF / diện tích / arrival.
+Cả hai bản RTL đã có sẵn trong hồ sơ nên đây là thí nghiệm rất rẻ.</p>
+</blockquote>
+<h2 id="9-nhung-cho-sinh-vien-hay-sai-va-cach-phat-hien">9. Những chỗ sinh viên hay sai và cách phát hiện</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th style="text-align: right;">#</th>
+<th>Sai lầm</th>
+<th>Hậu quả</th>
+<th>Phát hiện bằng bằng chứng nào</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">1</td>
+<td>Cộng 4 mẫu vào biến 8 bit</td>
+<td><strong>Tràn</strong>, kết quả sai hoàn toàn khi tổng &gt; 255</td>
+<td>Ca 4 mẫu <code>255</code>: đúng phải cho <code>255</code>. Charter mục 10 nêu đích danh</td>
+</tr>
+<tr>
+<td style="text-align: right;">2</td>
+<td>Nhầm "trượt" với "theo khối"</td>
+<td>Kỳ vọng sai, hoặc thiết kế sai</td>
+<td><strong>Chính lỗi của đề này.</strong> Đếm số kết quả hợp lệ: K mẫu ⇒ trượt cho <code>K−3</code>, theo khối cho <code>⌊K/4⌋</code></td>
+</tr>
+<tr>
+<td style="text-align: right;">3</td>
+<td>Quên bão hoà <code>count_q</code></td>
+<td><code>count_q</code> cuộn vòng ⇒ ngừng trừ ⇒ <code>sum_q</code> cộng dồn vô hạn</td>
+<td>Ca dài hơn 8 mẫu. Testbench bản gốc <strong>không đủ dài để bắt</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">4</td>
+<td>Ghi mẫu mới <strong>trước</strong> khi đọc mẫu cũ</td>
+<td>Trừ nhầm chính mẫu vừa ghi ⇒ <code>sum_q</code> sai vĩnh viễn</td>
+<td>Ca mẫu thứ 5 — chu kỳ đầu tiên có phép trừ. Đã PASS trong mô phỏng thật</td>
+</tr>
+<tr>
+<td style="text-align: right;">5</td>
+<td>Lệch chỉ số <code>wr_ptr</code> (trừ nhầm mẫu thứ 2 thay vì thứ 1)</td>
+<td>Cửa sổ sai, kết quả lệch</td>
+<td>Ca chuỗi tăng dần: <code>4,8,12,16</code> phải cho <code>10</code></td>
+</tr>
+<tr>
+<td style="text-align: right;">6</td>
+<td>Bỏ <code>valid_out</code>, dùng <code>avg_out == 0</code> làm dấu hiệu</td>
+<td>Không phân biệt "chưa sẵn sàng" với "trung bình bằng 0"</td>
+<td>Ca 4 mẫu <code>0</code>: phải có <code>valid_out = 1</code> và <code>avg_out = 0</code></td>
+</tr>
+<tr>
+<td style="text-align: right;">7</td>
+<td>Dùng <code>&gt;&gt;&gt;</code> (dịch số học) thay <code>&gt;&gt;</code></td>
+<td>Với dữ liệu không dấu thì vô hại, nhưng sai nguyên tắc; nếu đổi sang có dấu sẽ sai</td>
+<td>Đọc mã + kiểm khai báo <code>logic [W-1:0]</code> (không <code>signed</code>)</td>
+</tr>
+<tr>
+<td style="text-align: right;">8</td>
+<td>Tưởng phép chia 4 tốn nhiều cell</td>
+<td>Tối ưu sai chỗ</td>
+<td>Bảng phân bố cell: không có cell dịch; endpoint STA là <code>sum_q[9]</code></td>
+</tr>
+<tr>
+<td style="text-align: right;">9</td>
+<td>Lo rằng <code>sum_q + x − oldest</code> bị tràn ở bước trung gian</td>
+<td>Thêm bit thừa không cần thiết</td>
+<td>Giá trị trung gian <code>sum_q + x</code> có thể tới <code>1275 &gt; 1023</code> và <strong>bị cắt</strong> theo modulo 2¹⁰ — nhưng kết quả cuối luôn <code>&lt; 1024</code> nên <strong>đúng</strong>. Đây là số học modulo, cần nói rõ khi bảo vệ</td>
+</tr>
+<tr>
+<td style="text-align: right;">10</td>
+<td>Giữ <code>valid_in</code> cao nhiều chu kỳ cho một mẫu</td>
+<td>Nạp trùng mẫu, cửa sổ sai</td>
+<td><strong>Mạch không thể phát hiện.</strong> Chỉ phát hiện bằng đọc đặc tả giao diện</td>
+</tr>
+<tr>
+<td style="text-align: right;">11</td>
+<td>Đọc <code>Clock 0,00 W</code> thành "cây clock miễn phí"</td>
+<td>Kết luận sai về công suất</td>
+<td>CTS chưa chạy — <code>06_GDSII/cts/README.md</code></td>
+</tr>
+<tr>
+<td style="text-align: right;">12</td>
+<td>Coi <code>slack 5,36 ns</code> là "chạy được ở 100 MHz"</td>
+<td>Phát biểu vượt mức</td>
+<td>Chưa ký sinh dây, chưa CTS, một góc PVT; <strong>và 1,00 ns là giả định về tầng ADC</strong></td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="10-cau-hoi-mentor-nen-dat-khi-bao-ve">10. Câu hỏi mentor nên đặt khi bảo vệ</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th style="text-align: right;">#</th>
+<th>Câu hỏi</th>
+<th>Đáp án mong đợi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">1</td>
+<td>Bạn đo được bao nhiêu flip-flop? Có đúng 32 không?</td>
+<td><strong>58</strong>, trong đó <strong>đúng 32</strong> cho <code>sample_mem</code>. Bóc tách đủ 26 phần dư, gồm <strong>2 FF do Yosys sinh</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">2</td>
+<td>Hai flip-flop <code>_000_</code>/<code>_001_</code> trong netlist là gì?</td>
+<td>Bản sao <strong>địa chỉ đọc</strong> của bộ nhớ, do pass <code>memory</code> tách cổng đọc khỏi cổng ghi. Chúng lái <code>S0</code>/<code>S1</code> của 8 cell <code>mux4_2</code>. Bằng chứng trong <code>yosys.log</code></td>
+</tr>
+<tr>
+<td style="text-align: right;">3</td>
+<td>Phép chia cho 4 tốn bao nhiêu cell? Chứng minh</td>
+<td><strong>0 cell.</strong> Không có cell dịch trong 260 cell; <code>avg_out</code> chỉ 8 FF; endpoint STA là <code>sum_q[9]</code> chứ không phải <code>avg_out</code></td>
+</tr>
+<tr>
+<td style="text-align: right;">4</td>
+<td>Vì sao <code>sum_q</code> phải 10 bit? Chứng minh cho <code>W</code> bất kỳ</td>
+<td><code>4·(2^W−1) &lt; 2^(W+2)</code>. Có <strong>chứng minh hình thức</strong> trong <code>bounds.py</code>, log ghi <code>PASS for W=1..64</code></td>
+</tr>
+<tr>
+<td style="text-align: right;">5</td>
+<td>Trước khi đủ 4 mẫu, <code>avg_out</code> bằng bao nhiêu? Vì sao cần <code>valid_out</code>?</td>
+<td>Giữ giá trị cũ (<code>0</code> sau reset). Cần cờ vì <code>0</code> là trung bình hợp lệ, miền <code>0…255</code> đã dùng hết</td>
+</tr>
+<tr>
+<td style="text-align: right;">6</td>
+<td>Đường tới hạn của bạn ở đâu? Bạn đoán trước có đúng không?</td>
+<td><code>sample_in[1] → sum_q[9]</code>, <strong>14 cell, 4,56 ns</strong>. Đoán đúng <em>nút thắt là chuỗi carry</em> (6 <code>maj3_1</code>, 52 % độ trễ) nhưng <strong>sai về độ lớn</strong>: <code>abc</code> hợp nhất cộng và trừ thành <strong>một</strong> mạng carry, và startpoint là <strong>chân vào</strong>, không phải thanh ghi</td>
+</tr>
+<tr>
+<td style="text-align: right;">7</td>
+<td>Mô phỏng FAIL mà tổng hợp PASS — bạn kết luận thế nào?</td>
+<td>RTL đúng, <strong>testbench sai</strong> (hiểu nhầm trượt thành theo khối). Ba bằng chứng: RTL, golden model, và <strong>testbench tự mâu thuẫn</strong> ở mẫu 5 vs mẫu 6</td>
+</tr>
+<tr>
+<td style="text-align: right;">8</td>
+<td>Charter mục 9 hỏi "cách tiết kiệm hơn dùng bộ tích luỹ trượt" — bạn trả lời sao?</td>
+<td>RTL <strong>đã dùng</strong> tích luỹ trượt; với <code>N = 4</code> nó <strong>gần như không tiết kiệm</strong> (3 số hạng thay vì 4, đổi lấy 10 FF). Lợi ích thật là <strong>độ phức tạp không tăng theo N</strong>. Số liệu so sánh ⬜ chưa có vì bản tham chiếu chưa tổng hợp</td>
+</tr>
+<tr>
+<td style="text-align: right;">9</td>
+<td>Giá trị trung gian <code>sum_q + x</code> có tràn không?</td>
+<td>Có thể vượt 1023 và <strong>bị cắt</strong> theo modulo 2¹⁰, nhưng kết quả cuối luôn <code>&lt; 1024</code> nên đúng. Số học modulo</td>
+</tr>
+<tr>
+<td style="text-align: right;">10</td>
+<td>Nếu tầng ADC chậm hơn 1 ns thì sao?</td>
+<td>Slack co lại đúng bằng phần chênh, vì đường tới hạn <strong>bắt đầu từ chân vào</strong>. Muốn cắt phụ thuộc: thêm thanh ghi đệm cho <code>sample_in</code> (+8 FF, +1 chu kỳ)</td>
+</tr>
+<tr>
+<td style="text-align: right;">11</td>
+<td>Đáp ứng xung của bộ lọc này trông thế nào?</td>
+<td><strong>Bốn mẫu ra bằng nhau</strong> (<code>63,63,63,63</code> với xung 255) — chữ ký của FIR 4 hệ số bằng nhau. Testbench bản gốc chỉ kỳ vọng 3, đó là lỗi</td>
+</tr>
+<tr>
+<td style="text-align: right;">12</td>
+<td>Hồ sơ đã thoả Charter mục 4 chưa?</td>
+<td><strong>Chưa</strong> — không có module ánh xạ chân Tiny Tapeout, và xung đột <code>uio[0]</code> vẫn còn</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="11-gioi-han-da-chung-minh-duoc-gi-chua-chung-minh-duoc-gi">11. Giới hạn: đã chứng minh được gì, chưa chứng minh được gì</h2>
+<h3 id="da-chung-minh">Đã chứng minh</h3>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Khẳng định</th>
+<th>Bằng chứng</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Độ rộng tích luỹ <code>W+2</code> đủ chống tràn cho mọi <code>W = 1…64</code></td>
+<td><code>bounds.py</code> + <code>python_reference_run.log</code> — <strong>chứng minh</strong>, không phải kiểm mẫu</td>
+</tr>
+<tr>
+<td>Giai đoạn nạp đầy đúng (4 mẫu đầu, <code>valid_out</code> đúng thời điểm)</td>
+<td>4 mốc kiểm PASS trong <code>simulation.log</code>, <code>t = 26…56</code></td>
+</tr>
+<tr>
+<td><strong>Phép trừ mẫu cũ đúng</strong> ở chu kỳ đầu tiên nó hoạt động</td>
+<td>Mốc kiểm thứ 5 PASS (<code>t = 66</code>) — mẫu thứ 5</td>
+</tr>
+<tr>
+<td>RTL tổng hợp được ra <code>sky130_fd_sc_hd</code></td>
+<td><code>synth_stat.txt</code> — 260 cell, 58 FF, 2 623,7664 µm²</td>
+</tr>
+<tr>
+<td>Cửa sổ dùng <strong>đúng 32</strong> flip-flop</td>
+<td>Ánh xạ FF → <code>sample_mem[i][j]</code> trên <code>netlist.v</code></td>
+</tr>
+<tr>
+<td>Phép chia 4 tốn <strong>0 cell</strong></td>
+<td>Phân bố cell + endpoint STA là <code>sum_q[9]</code></td>
+</tr>
+<tr>
+<td>Đáp ứng chu kỳ 10 ns ở góc <code>tt</code>, sau tổng hợp</td>
+<td><code>timing_report_max.txt</code> — arrival 4,56 ns, slack 5,36 ns, WNS/TNS 0,00</td>
+</tr>
+<tr>
+<td>Nút thắt là chuỗi carry (52 % độ trễ)</td>
+<td>6 cell <code>maj3_1</code> nối tiếp trên đường tới hạn</td>
+</tr>
+<tr>
+<td>Lỗi mô phỏng nằm ở <strong>testbench</strong></td>
+<td>RTL và golden model đồng thuận; testbench tự mâu thuẫn</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="chua-chung-minh-duoc">Chưa chứng minh được</h3>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Chưa chứng minh</th>
+<th>Vì sao</th>
+<th>Cần gì</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Chế độ ổn định (mẫu ≥ 6)</strong></td>
+<td>Mô phỏng dừng đúng ở mẫu 6</td>
+<td>Bản vá <code>known_issues.md</code> §A.4</td>
+</tr>
+<tr>
+<td>Ca bước nhảy, ca xung đơn đầy đủ</td>
+<td>Testbench không có / viết sai</td>
+<td>CA-TX-1, CA-TX-2</td>
+</tr>
+<tr>
+<td>Biên <code>sum_q = 1020</code></td>
+<td>Chưa có ca 4 mẫu <code>255</code></td>
+<td>CA-TX-1</td>
+</tr>
+<tr>
+<td><code>reference_model.py</code> chạy PASS</td>
+<td><strong>Log không chứa đầu ra của nó</strong></td>
+<td>Chạy lại và ghi log (§<code>known_issues.md</code> C)</td>
+</tr>
+<tr>
+<td>Assertion SVA</td>
+<td>Chưa biên dịch (thiếu <code>-DG01_SVA</code>), và 1/2 viết sai đơn vị thời gian</td>
+<td>Thêm cờ + sửa assertion</td>
+</tr>
+<tr>
+<td>Netlist đúng chức năng</td>
+<td>Chưa mô phỏng gate-level</td>
+<td>Có sẵn netlist, cần script</td>
+</tr>
+<tr>
+<td><code>avg_out</code> không glitch</td>
+<td>Zero-delay không sinh glitch</td>
+<td>Mô phỏng gate-level có độ trễ</td>
+</tr>
+<tr>
+<td>Đúng sau P&amp;R, có ký sinh dây</td>
+<td>Chưa chạy LibreLane</td>
+<td><code>04_run_librelane.sh</code> + PDK sky130A</td>
+</tr>
+<tr>
+<td>Biên an toàn ở góc <code>ss</code>/<code>ff</code></td>
+<td>Chỉ chạy <code>tt_025C_1v80</code></td>
+<td>STA đa góc</td>
+</tr>
+<tr>
+<td>Công suất thật</td>
+<td>Ước lượng hoạt động mặc định, <code>Clock 0,0 %</code> vì chưa CTS</td>
+<td>VCD + <code>read_vcd</code></td>
+</tr>
+<tr>
+<td>So sánh định lượng với bản cộng thẳng</td>
+<td><code>g01_direct_sum_reference</code> chưa tổng hợp</td>
+<td>Đổi <code>-top</code>, chạy lại</td>
+</tr>
+<tr>
+<td>Tích hợp được lên ô Tiny Tapeout</td>
+<td>Không có module ánh xạ chân</td>
+<td>Viết wrapper, chốt lại <code>uio[0]</code></td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Phát biểu mạnh nhất mà bằng chứng cho phép:</strong> <em>"Bộ lọc trung bình trượt bốn điểm đã được
+chứng minh đúng ở giai đoạn nạp đầy và ở chu kỳ đầu tiên của phép trừ; độ rộng tích luỹ có
+chứng minh hình thức; khối tổng hợp được thành 260 cell / 58 flip-flop / 2 623,7664 µm² và
+đáp ứng chu kỳ quy chiếu 10 ns với slack 5,36 ns ở góc typical sau tổng hợp (chưa ký sinh
+dây); chế độ ổn định chưa được kiểm chứng bằng mô phỏng RTL vì testbench có lỗi đặc tả."</em>
+Không phát biểu nào về tần số hoạt động, sign-off hay tape-out được phép xuất hiện.</p>
+<hr>
+<p><em>Phiên bản: v1.0 · Ngày: 2026-09-24</em></p>
+</main>
+<footer class="doc">
+  Tài liệu sinh từ <code>implementation-notes_G01.md</code>.
+  Mọi số liệu đều kèm công cụ, phiên bản và lệnh tái lập trong
+  <code>07_TRACEABILITY/evidence_index.md</code>.
+</footer>
+</div>
+<script>
+(function(){
+  var b=document.createElement('button');
+  b.className='themebtn'; b.type='button';
+  function lbl(){var t=document.documentElement.getAttribute('data-theme');
+    return t==='dark'?'Nen sang':(t==='light'?'Nen toi':'Doi nen');}
+  b.textContent=lbl();
+  try{var s=localStorage.getItem('rtl2gds-theme'); if(s)document.documentElement.setAttribute('data-theme',s);}catch(e){}
+  b.textContent=lbl();
+  b.addEventListener('click',function(){
+    var cur=document.documentElement.getAttribute('data-theme');
+    var mq=window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var next=cur?(cur==='dark'?'light':'dark'):(mq?'light':'dark');
+    document.documentElement.setAttribute('data-theme',next);
+    try{localStorage.setItem('rtl2gds-theme',next);}catch(e){}
+    b.textContent=lbl();
+  });
+  document.body.appendChild(b);
+})();
+</script>
+</body>
+</html>
