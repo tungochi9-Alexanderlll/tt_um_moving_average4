@@ -1,0 +1,2 @@
+G01 TB completed
+05_VERIFICATION/testbench/g01_tb.sv:62: $finish called at 196 (1s)
