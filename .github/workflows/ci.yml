@@ -1,0 +1,23 @@
+name: RTL CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  synthesis:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Yosys
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y yosys
+
+      - name: Check and synthesize RTL
+        run: |
+          yosys -p 'read_verilog moving_average4.v; hierarchy -top tt_um_moving_average4; proc; opt; check; synth -top tt_um_moving_average4; stat'
